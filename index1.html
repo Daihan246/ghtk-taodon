@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Quản Lý Đơn GHTK</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; padding: 15px; margin: 0; }
+        .container { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        h2 { color: #008848; font-size: 16px; border-bottom: 2px solid #008848; padding-bottom: 6px; margin-top: 0; }
+        .card { border: 1px solid #eee; background: #fafafa; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+        .card-id { font-weight: bold; color: #008848; font-size: 14px; }
+        .card-info { font-size: 13px; color: #333; margin: 4px 0; }
+        .btn-del { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; float: right; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>📋 QUẢN LÝ ĐƠN HÀNG</h2>
+    <div id="orderList"></div>
+</div>
+<script>
+    function renderOrders() {
+        let orders = JSON.parse(localStorage.getItem('ghtk_orders')) || [];
+        let listDiv = document.getElementById('orderList');
+        if (orders.length === 0) {
+            listDiv.innerHTML = '<p style="text-align:center;color:#888;">Chưa có đơn hàng nào.</p>';
+            return;
+        }
+        listDiv.innerHTML = orders.map((o, index) => `
+            <div class="card">
+                <button class="btn-del" onclick="deleteOrder(${index})">Xóa</button>
+                <div class="card-id">Mã: ${o.id}</div>
+                <div class="card-info">👤 <b>${o.name}</b> - 📞 ${o.phone}</div>
+                <div class="card-info">📍 ${o.address}</div>
+                <div class="card-info">💰 COD: <b>${Number(o.cod).toLocaleString('vi-VN')} VNĐ</b></div>
+            </div>
+        `).join('');
+    }
+    function deleteOrder(index) {
+        if (confirm('Bạn có chắc muốn xóa đơn này?')) {
+            let orders = JSON.parse(localStorage.getItem('ghtk_orders')) || [];
+            orders.splice(index, 1);
+            localStorage.setItem('ghtk_orders', JSON.stringify(orders));
+            renderOrders();
+        }
+    }
+    renderOrders();
+</script>
+</body>
+</html>
