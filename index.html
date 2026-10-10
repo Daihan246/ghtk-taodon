@@ -3,49 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Tạo Đơn GHTK</title>
+    <title>GHTK Mobile App</title>
     <style>
-        body { font-family: -apple-system, sans-serif; background: #f0f2f5; padding: 15px; margin: 0; }
-        .container { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        h2 { color: #008848; font-size: 16px; border-bottom: 2px solid #008848; padding-bottom: 6px; }
-        label { font-size: 12px; font-weight: bold; display: block; margin-top: 8px; }
-        input { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; box-sizing: border-box; }
-        .btn-main { background: #008848; color: white; border: none; width: 100%; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 8px; margin-top: 15px; cursor: pointer; }
+        body { font-family: -apple-system, sans-serif; background: #f0f2f5; padding: 10px; margin: 0; padding-bottom: 70px; }
+        .container { background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); margin-bottom: 15px; }
+        h2 { color: #008848; font-size: 16px; border-bottom: 2px solid #008848; padding-bottom: 6px; margin-top: 0; }
+        label { font-size: 13px; font-weight: bold; color: #333; margin-top: 10px; display: block; }
+        input { width: 100%; padding: 10px; margin-top: 4px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; box-sizing: border-box; }
+        .btn-submit, .btn-search { background: #008848; color: white; border: none; width: 100%; padding: 12px; font-size: 15px; font-weight: bold; border-radius: 8px; margin-top: 15px; cursor: pointer; }
+        .card { border: 1px solid #eee; background: #fafafa; border-radius: 8px; padding: 10px; margin-bottom: 10px; }
+        .card-id { font-weight: bold; color: #008848; font-size: 14px; }
+        .card-info { font-size: 13px; color: #333; margin: 4px 0; }
+        .btn-del { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; float: right; }
+        
+        /* Thanh điều hướng dưới cùng */
+        .nav-bar { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; border-top: 1px solid #ddd; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); z-index: 1000; }
+        .nav-item { flex: 1; text-align: center; padding: 12px 0; font-size: 12px; color: #666; font-weight: bold; cursor: pointer; }
+        .nav-item.active { color: #008848; background: #f0fdf4; }
+        .section { display: none; }
+        .section.active { display: block; }
     </style>
 </head>
 <body>
-<div class="container">
-    <h2>➕ TẠO ĐƠN HÀNG MỚI</h2>
-    <form id="orderForm">
-        <label>Tên người nhận:</label>
-        <input type="text" id="name" required placeholder="Nhập tên...">
-        <label>Số điện thoại:</label>
-        <input type="tel" id="phone" required placeholder="Nhập SĐT...">
-        <label>Địa chỉ nhận hàng:</label>
-        <input type="text" id="address" required placeholder="Số nhà, đường, quận...">
-        <label>Tiền thu hộ COD (VNĐ):</label>
-        <input type="number" id="cod" value="0" required>
-        <button type="submit" class="btn-main">TẠO ĐƠN NGAY</button>
-    </form>
-</div>
+
+    <!-- TAB 1: TẠO ĐƠN -->
+    <div id="tab-create" class="section active">
+        <div class="container">
+            <h2>➕ TẠO ĐƠN HÀNG MỚI</h2>
+            <form id="orderForm">
+                <label>Tên người nhận:</label>
+                <input type="text" id="name" required placeholder="Nhập tên người nhận...">
+                
+                <label>Số điện thoại:</label>
+                <input type="tel" id="phone" required placeholder="Nhập số điện thoại...">
+                
+                <label>Địa chỉ nhận hàng:</label>
+                <input type="text" id="address" required placeholder="Nhập địa chỉ đầy đủ...">
+                
+                <label>Tiền thu hộ COD (VNĐ):</label>
+                <input type="number" id="cod" value="0" required>
+                
+                <button type="submit" class="btn-submit">LƯU ĐƠN HÀNG</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TAB 2: QUẢN LÝ ĐƠN -->
+    <div id="tab-manage" class="section">
+        <div class="container">
+            <h2>📋 QUẢN LÝ ĐƠN HÀNG</h2>
+            <div id="orderList"></div>
+        </div>
+    </div>
+
+    <!-- TAB 3: TRA CỨU -->
+    <div id="tab-search" class="section">
+        <div class="container">
+            <h2>🔍 TRA CỨU ĐƠN HÀNG</h2>
+            <input type="text" id="searchId" placeholder="Nhập mã đơn hàng (VD: GHTK123456)...">
+            <button class="btn-search" onclick="searchOrder()">TRA CỨU</button>
+            <div id="result" class="style-result" style="margin-top:15px; display:none;"></div>
+        </div>
+    </div>
+
+    <!-- MENU ĐIỀU HƯỚNG DƯỚI -->
+    <div class="nav-bar">
+        <div class="nav-item active" onclick="switchTab('create', this)">➕ Tạo Đơn</div>
+        <div class="nav-item" onclick="switchTab('manage', this)">📋 Quản Lý</div>
+        <div class="nav-item" onclick="switchTab('search', this)">🔍 Tra Cứu</div>
+    </div>
+
 <script>
-    document.getElementById('orderForm').addEventListener('submit', (e) => {
+    function switchTab(tabName, element) {
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        
+        if(tabName === 'create') document.getElementById('tab-create').classList.add('active');
+        if(tabName === 'manage') {
+            document.getElementById('tab-manage').classList.add('active');
+            renderOrders();
+        }
+        if(tabName === 'search') document.getElementById('tab-search').classList.add('active');
+        
+        element.classList.add('active');
+    }
+
+    // Xử lý tạo đơn
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
         e.preventDefault();
-        let orders = JSON.parse(localStorage.getItem('ghtk_orders')) || [];
-        let now = new Date();
-        let timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0') + ' ' + now.getDate() + '/' + (now.getMonth() + 1);
+        let randomId = 'GHTK' + Math.floor(100000 + Math.random() * 900000);
+        let now = new Date().toLocaleString('vi-VN');
+
         let newOrder = {
-            id: 'GHTK' + Math.floor(100000 + Math.random() * 900000),
-            name: document.getElementById('name').value,
-            phone: document.getElementById('phone').value,
-            address: document.getElementById('address').value,
+            id: randomId,
+            name: document.getElementById('name').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            address: document.getElementById('address').value.trim(),
             cod: document.getElementById('cod').value,
-            timeline: [{ time: timeStr, status: 'Đã tạo đơn hàng thành công' }]
+            timeline: [{ time: now, status: 'Đơn hàng mới tạo thành công' }]
         };
+
+        let orders = JSON.parse(localStorage.getItem('ghtk_orders')) || [];
         orders.unshift(newOrder);
         localStorage.setItem('ghtk_orders', JSON.stringify(orders));
-        alert('Tạo đơn thành công! Mã: ' + newOrder.id);
+
+        alert('Tạo đơn thành công! Mã đơn: ' + randomId);
         document.getElementById('orderForm').reset();
     });
+
+    // Hiển thị danh sách quản lý
+    function renderOrders() {
+        let orders = JSON.parse(localStorage.getItem('ghtk_orders')) || [];
+        let listDiv = document.getElementById('orderList');
+        if (orders.length === 0) {
+            listDiv.innerHTML = '<p style="text-align:center;color:#888;">Chưa có đơn hàng nào.</p>';
+            return;
+        }
+        listDiv.innerHTML = orders.map((o, index) => `
+            <div class="card">
+                <button class="btn-del" onclick="deleteOrder(${index})">Xóa</button>
+                <div class="card-id">Mã: ${o.id}</div>
+                <div class="card-info">👤 <b>${o.name}</b> - 📞 ${o.phone}</div>
+                <div class="card-info">📍 ${o.address}</div>
+                <div class="card-info">💰 COD: <b>${Number(o.cod).toLocaleString('vi-VN')} VNĐ</b></div>
+            </div>
+        `).join('');
+    }
+
+    function deleteOrder(index) {
+        if (confirm('Bạn có chắc muốn xóa đơn này?')) {
+            let orders = JSON.parse(localStorage.getItem('ghtk_orders')) || [];
+            orders.splice(index, 1);
+            localStorage.setItem('ghtk_orders', JSON.stringify(orders));
+            renderOrders();
+        }
+    }
+
+    // Tra cứu đơn
+    function searchOrder() {
+        let id = document.getElementById('searchId').value.trim().toUpperCase();
+        let orders = JSON.parse(localStorage.getItem('ghtk_orders')) || [];
+        let order = orders.find(o => o.id.toUpperCase() === id);
+        let resDiv = document.getElementById('result');
+        resDiv.style.display = 'block';
+        if (!order) {
+            resDiv.innerHTML = '<p style="color:red;text-align:center;">Không tìm thấy mã đơn hàng này!</p>';
+            return;
+        }
+        let timelineHtml = order.timeline ? order.timeline.map(t => `
+            <div style="padding:6px 0;border-bottom:1px solid #eee;font-size:13px;">
+                <div style="color:#888;font-size:11px;">⏱ ${t.time}</div>
+                <div>📍 <b>${t.status}</b></div>
+            </div>
+        `).join('') : '';
+        
+        resDiv.innerHTML = `
+            <hr style="border:0;border-top:1px dashed #ccc;">
+            <p><b>Mã đơn:</b> ${order.id}</p>
+            <p><b>Người nhận:</b> ${order.name} (${order.phone})</p>
+            <p><b>Địa chỉ:</b> ${order.address}</p>
+            <p><b>COD:</b> ${Number(order.cod).toLocaleString('vi-VN')} VNĐ</p>
+            <hr style="border:0;border-top:1px dashed #ccc;">
+            <h4 style="margin:5px 0;font-size:14px;color:#008848;">Lịch trình đơn hàng:</h4>
+            ${timelineHtml}
+        `;
+    }
 </script>
 </body>
+</html>
